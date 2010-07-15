@@ -102,3 +102,5 @@ TAGS
 *~
 *.orig
 *.rej
+.DS_Store
+.testlogs-*
