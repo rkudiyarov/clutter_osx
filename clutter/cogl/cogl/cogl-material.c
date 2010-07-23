@@ -239,6 +239,8 @@ _cogl_material_init_default_material (void)
   lighting_state->emission[2] = 0;
   lighting_state->emission[3] = 1.0;
 
+  lighting_state->shininess = 0.0f;
+
   /* Use the same defaults as the GL spec... */
   alpha_state->alpha_func = COGL_MATERIAL_ALPHA_FUNC_ALWAYS;
   alpha_state->alpha_func_reference = 0.0;
@@ -3016,6 +3018,14 @@ _cogl_material_point_size_equal (CoglMaterial *authority0,
 }
 
 static gboolean
+_cogl_material_user_shader_equal (CoglMaterial *authority0,
+                                  CoglMaterial *authority1)
+{
+  return (authority0->big_state->user_program ==
+          authority1->big_state->user_program);
+}
+
+static gboolean
 _cogl_material_layers_equal (CoglMaterial *authority0,
                              CoglMaterial *authority1)
 {
@@ -3242,6 +3252,12 @@ _cogl_material_equal (CoglMaterial *material0,
                               materials_difference,
                               COGL_MATERIAL_STATE_POINT_SIZE,
                               _cogl_material_point_size_equal))
+    return FALSE;
+
+  if (!simple_property_equal (material0, material1,
+                              materials_difference,
+                              COGL_MATERIAL_STATE_USER_SHADER,
+                              _cogl_material_user_shader_equal))
     return FALSE;
 
   if (!simple_property_equal (material0, material1,
@@ -3606,7 +3622,7 @@ cogl_material_set_shininess (CoglMaterial *material,
 
   g_return_if_fail (cogl_is_material (material));
 
-  if (shininess < 0.0 || shininess > 1.0)
+  if (shininess < 0.0)
     {
       g_warning ("Out of range shininess %f supplied for material\n",
                  shininess);

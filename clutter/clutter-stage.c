@@ -376,7 +376,7 @@ clutter_stage_realize (ClutterActor *self)
    * first paint (which will likely occur before the ConfigureNotify
    * is received)
    */
-  CLUTTER_SET_PRIVATE_FLAGS (self, CLUTTER_ACTOR_SYNC_MATRICES);
+  CLUTTER_SET_PRIVATE_FLAGS (self, CLUTTER_SYNC_MATRICES);
 
   g_assert (priv->impl != NULL);
   is_realized = _clutter_stage_window_realize (priv->impl);
@@ -771,6 +771,9 @@ gboolean
 _clutter_stage_has_full_redraw_queued (ClutterStage *stage)
 {
   ClutterStageWindow *stage_window = _clutter_stage_get_window (stage);
+
+  if (CLUTTER_ACTOR_IN_DESTRUCTION (stage) || stage_window == NULL)
+    return FALSE;
 
   if (stage->priv->redraw_pending &&
       !_clutter_stage_window_has_redraw_clips (stage_window))
@@ -1312,7 +1315,7 @@ clutter_stage_init (ClutterStage *self)
   ClutterBackend *backend;
 
   /* a stage is a top-level object */
-  CLUTTER_SET_PRIVATE_FLAGS (self, CLUTTER_ACTOR_IS_TOPLEVEL);
+  CLUTTER_SET_PRIVATE_FLAGS (self, CLUTTER_IS_TOPLEVEL);
 
   self->priv = priv = CLUTTER_STAGE_GET_PRIVATE (self);
 
@@ -1465,7 +1468,7 @@ clutter_stage_set_perspective (ClutterStage       *stage,
   /* this will cause the viewport to be reset; see
    * clutter_maybe_setup_viewport() inside clutter-main.c
    */
-  CLUTTER_SET_PRIVATE_FLAGS (stage, CLUTTER_ACTOR_SYNC_MATRICES);
+  CLUTTER_SET_PRIVATE_FLAGS (stage, CLUTTER_SYNC_MATRICES);
 }
 
 /**
@@ -2277,7 +2280,7 @@ clutter_stage_ensure_viewport (ClutterStage *stage)
 {
   g_return_if_fail (CLUTTER_IS_STAGE (stage));
 
-  CLUTTER_SET_PRIVATE_FLAGS (stage, CLUTTER_ACTOR_SYNC_MATRICES);
+  CLUTTER_SET_PRIVATE_FLAGS (stage, CLUTTER_SYNC_MATRICES);
 
   clutter_actor_queue_redraw (CLUTTER_ACTOR (stage));
 }
@@ -2576,7 +2579,7 @@ _clutter_stage_get_pending_swaps (ClutterStage *stage)
 {
   ClutterStageWindow *stage_window;
 
-  if (CLUTTER_PRIVATE_FLAGS (stage) & CLUTTER_ACTOR_IN_DESTRUCTION)
+  if (CLUTTER_ACTOR_IN_DESTRUCTION (stage))
     return 0;
 
   stage_window = _clutter_stage_get_window (stage);
